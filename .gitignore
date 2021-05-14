@@ -1,0 +1,9 @@
+# compiler build product
+build/
+
+# personal IDE settings
+.vscode/
+
+#CubeMX genereted files
+Drivers/
+Temp/
