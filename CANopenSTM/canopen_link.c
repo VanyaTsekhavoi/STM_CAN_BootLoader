@@ -1,5 +1,6 @@
 #include "canopen_link.h"
 #include "platform_reset.h"
+#include "platform_flash.h"
 #include "CO_OD.h"
 
 static inline void timebase_init()
@@ -18,42 +19,76 @@ static inline int32_t timebase_mark(int32_t *m)
 	return (mark - prev + (1 << 24)) & ((1 << 24) - 1);
 }
 
-static CO_SDO_abortCode_t Program_Transfer(CO_ODF_arg_t *ODF_arg);
+extern int __cfg_ldr_start, __cfg_ldr_end, __cfg_ldr_size;
+
 static CO_SDO_abortCode_t Program_Transfer(CO_ODF_arg_t *ODF_arg)
 {
-	uint32_t *programData = ODF_arg->data;
-	static uint_fast8_t bufferSize = 0;
-	bufferSize += CO_CONFIG_SDO_BUFFER_SIZE / 4;
+	/*****  SDO block read  *****/
+	uint8_t *programData = ODF_arg->data;
+	uint32_t dataLength = ODF_arg->dataLength;
+	uint32_t dataTotalLength = ODF_arg->dataLengthTotal;
+	uint32_t cfg_start = (uint32_t)&__cfg_ldr_start;
+	uint32_t cfg_end = (uint32_t)&__cfg_ldr_end;
+	uint32_t cfg_size = (uint32_t)&__cfg_ldr_size - sizeof(uint32_t);
 	CO_SDO_abortCode_t abortCode = CO_SDO_AB_NONE;
 
-	/*****  SDO block read  *****/
-	/*****  Flash Write  *****/
+	static uint32_t ptr = 0;
+	static uint32_t state = 0;
+
 	// copyToFlash(dstination, ODF_arg->data, bufferSize);
 	//			memcpy(dstination, ODF_arg->data, bufferSize);
 	HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, RESET);
 	HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, RESET);
+	HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, RESET);
 
-	for (uint8_t i = bufferSize - CO_CONFIG_SDO_BUFFER_SIZE; i < bufferSize; i++)
+	/***** Copying from ODF_arg bufer into Flash *****/
+
+	if (dataTotalLength >= cfg_size)
 	{
-		if (*(programData++) != i)
+		HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, SET);
+		return CO_SDO_AB_DATA_TRANSF;
+	}
+
+	if (state == 0)
+	{
+		platform_flash_unlock();
+		platform_flash_erase_flag_reset();
+		state++;
+	}
+	if (state == 1)
+	{
+		platform_flash_write(cfg_start + ptr, programData, dataLength);
+		ptr += dataLength;
+
+		if (ptr >= dataTotalLength)
 		{
-			HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, SET);
-			break;
-			bufferSize = 0;
-			abortCode = CO_SDO_AB_GENERAL;
+			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, SET);
+			readNums(dataTotalLength);
+
+			state = 0;
+			platform_flash_lock();
 		}
 	}
-	if (bufferSize != 0)
-	{
-		HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, SET);
-	}
+
 	return abortCode;
 }
 
-typedef struct
+/* This is temporary test function */
+static void readNums(uint32_t dataTotalLength)
 {
+	/*****  SDO block read  *****/
+	uint32_t *programData = (uint32_t *)malloc(dataTotalLength);
+	uint32_t cfg_start = (uint32_t)&__cfg_ldr_start;
+	uint32_t len = dataTotalLength / sizeof(uint32_t);
 
-} Program_Transfer_t;
+	memcpy(programData, (void *)(cfg_start), dataTotalLength);
+
+	for (uint32_t i = 0; i < len; i++)
+	{
+		if (i != programData[i])
+			HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, SET);
+	}
+}
 
 static CO_NMT_reset_cmd_t reset = CO_RESET_NOT;
 static int32_t clk = 0;
@@ -193,6 +228,7 @@ CO_ReturnError_t CO_init(
 		return err;
 	}
 
+	/* Check for SDO TimeOut = 1200 */
 	err = CO_CANopenInit(nodeId);
 	if (err)
 	{

@@ -58,11 +58,16 @@ _estack = 0x20080000;    /* end of RAM */
 _Min_Heap_Size = 0x200;      /* required amount of heap  */
 _Min_Stack_Size = 0x400; /* required amount of stack */
 
+__cfg_ldr_start = ORIGIN(CLFLASH);
+__cfg_ldr_end = ORIGIN(CLFLASH) + LENGTH(CLFLASH);
+__cfg_ldr_size = LENGTH(CLFLASH);
+
 /* Specify the memory areas */
 MEMORY
 {
 RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 512K
-FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 2048K
+FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 1792K
+CLFLASH (rx)      : ORIGIN = 0x081C0000, LENGTH = 256K
 }
 
 /* Define output sections */
@@ -72,9 +77,20 @@ SECTIONS
   .isr_vector :
   {
     . = ALIGN(4);
+    PROVIDE(__vtor_start = .);
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
   } >FLASH
+
+  .config_ldr (NOLOAD) :
+  {
+	KEEP(*(.config_ldr))
+  } >CLFLASH
+
+  .config_app (NOLOAD) :
+  {
+	KEEP(*(.config_app))
+  } >CAFLASH
 
   /* The program code and other data goes into FLASH */
   .text :
@@ -102,7 +118,7 @@ SECTIONS
     . = ALIGN(4);
   } >FLASH
 
-  .ARM.extab   : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >FLASH
+  .ARM.extab   : { *(.ARM.extab* .gnu.linkonce.armextab.*) } >AFLASH
   .ARM : {
     __exidx_start = .;
     *(.ARM.exidx*)
