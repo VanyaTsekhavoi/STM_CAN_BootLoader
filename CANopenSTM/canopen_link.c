@@ -1,6 +1,7 @@
 #include "canopen_link.h"
 #include "platform_reset.h"
 #include "platform_flash.h"
+#include "loader.h"
 #include "CO_OD.h"
 
 static inline void timebase_init()
@@ -19,17 +20,15 @@ static inline int32_t timebase_mark(int32_t *m)
 	return (mark - prev + (1 << 24)) & ((1 << 24) - 1);
 }
 
-extern int __cfg_ldr_start, __cfg_ldr_end, __cfg_ldr_size;
-
 static CO_SDO_abortCode_t Program_Transfer(CO_ODF_arg_t *ODF_arg)
 {
 	/*****  SDO block read  *****/
 	uint8_t *programData = ODF_arg->data;
 	uint32_t dataLength = ODF_arg->dataLength;
 	uint32_t dataTotalLength = ODF_arg->dataLengthTotal;
-	uint32_t cfg_start = (uint32_t)&__cfg_ldr_start;
-	uint32_t cfg_end = (uint32_t)&__cfg_ldr_end;
-	uint32_t cfg_size = (uint32_t)&__cfg_ldr_size - sizeof(uint32_t);
+	uint32_t start = app_start();
+	uint32_t end = app_end();
+	uint32_t size = app_size();
 	CO_SDO_abortCode_t abortCode = CO_SDO_AB_NONE;
 
 	static uint32_t ptr = 0;
@@ -43,7 +42,7 @@ static CO_SDO_abortCode_t Program_Transfer(CO_ODF_arg_t *ODF_arg)
 
 	/***** Copying from ODF_arg bufer into Flash *****/
 
-	if (dataTotalLength >= cfg_size)
+	if (dataTotalLength >= size)
 	{
 		HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, SET);
 		return CO_SDO_AB_DATA_TRANSF;
@@ -57,7 +56,7 @@ static CO_SDO_abortCode_t Program_Transfer(CO_ODF_arg_t *ODF_arg)
 	}
 	if (state == 1)
 	{
-		platform_flash_write(cfg_start + ptr, programData, dataLength);
+		platform_flash_write(start + ptr, programData, dataLength);
 		ptr += dataLength;
 
 		if (ptr >= dataTotalLength)
@@ -78,7 +77,7 @@ static void readNums(uint32_t dataTotalLength)
 {
 	/*****  SDO block read  *****/
 	uint32_t *programData = (uint32_t *)malloc(dataTotalLength);
-	uint32_t cfg_start = (uint32_t)&__cfg_ldr_start;
+	uint32_t cfg_start = app_start();
 	uint32_t len = dataTotalLength / sizeof(uint32_t);
 
 	memcpy(programData, (void *)(cfg_start), dataTotalLength);

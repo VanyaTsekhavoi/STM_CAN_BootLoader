@@ -77,6 +77,7 @@ C_SOURCES += $(wildcard CANopenNode/303/*.c)
 C_SOURCES += $(wildcard CANopenNode/304/*.c)
 C_SOURCES += $(wildcard CANopenNode/305/*.c)
 C_SOURCES += $(wildcard CANopenNode/*.c)
+C_SOURCES += $(wildcard loader/*.c)
 
 # ASM sources
 ASM_SOURCES =  \
@@ -139,7 +140,8 @@ C_INCLUDES =  \
 -IDrivers/CMSIS/Device/ST/STM32F7xx/Include \
 -IDrivers/CMSIS/Include \
 -ICANopenSTM \
--ICANopenNode 
+-ICANopenNode \
+-Iloader
 
 
 # compile gcc flags

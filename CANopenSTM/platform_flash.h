@@ -1,6 +1,8 @@
 #ifndef __PLATFORM_FLASH_H__
 #define __PLATFORM_FLASH_H__
 
+#include "stm32f7xx_hal.h"
+#include "stm32f7xx.h"
 #include <stdint.h>
 #include <stdbool.h>
 

@@ -149,6 +149,7 @@
   */
 void SystemInit(void)
 {
+  extern int __vtor_start;
   /* FPU settings ------------------------------------------------------------*/
   #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
     SCB->CPACR |= ((3UL << 10*2)|(3UL << 11*2));  /* set CP10 and CP11 Full Access */
@@ -173,11 +174,15 @@ void SystemInit(void)
   RCC->CIR = 0x00000000;
 
   /* Configure the Vector Table location add offset address ------------------*/
+  SCB->VTOR = (uint32_t)&__vtor_start; /* Vector Table Relocation in Internal FLASH */
+
+  #if 0
 #ifdef VECT_TAB_SRAM
   SCB->VTOR = RAMDTCM_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM */
 #else
   SCB->VTOR = FLASH_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH */
 #endif
+  #endif
 }
 
 /**

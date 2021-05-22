@@ -29,7 +29,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "canopen_link.h"
-
+#include "loader.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,7 +49,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+extern go_to_app_trigger;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -111,6 +111,13 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
     canopen_link_poll();
+
+    //button condition
+    if (go_to_app_trigger)
+    {
+      go_to_app();
+    }
+    
   }
   /* USER CODE END 3 */
 }
