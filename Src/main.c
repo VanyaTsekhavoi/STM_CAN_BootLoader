@@ -21,7 +21,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "can.h"
-#include "eth.h"
 #include "usart.h"
 #include "usb_otg.h"
 #include "gpio.h"
@@ -30,6 +29,7 @@
 /* USER CODE BEGIN Includes */
 #include "canopen_link.h"
 #include "loader.h"
+#include "systemTimer.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,7 +49,16 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-extern go_to_app_trigger;
+/***** General Bootloader variables *****/
+volatile bool go_to_app_trigger = false;
+volatile bool catched = false;
+volatile sysTick_timer_param_t sysTick = {0,0,1};
+
+/***** Main function variables *****/
+static int32_t clk = 0;
+static uint32_t ticks_per200_ms = 0;
+static int32_t go_to_app_timer = 0;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -92,32 +101,57 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_ETH_Init();
   MX_USART3_UART_Init();
   MX_USB_OTG_FS_PCD_Init();
   MX_CAN1_Init();
   /* USER CODE BEGIN 2 */
   canopen_link_init();
-
   /* USER CODE END 2 */
  
  
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+  go_to_app_timer = timebase_mark(&clk);
+  ticks_per200_ms = sysTick.ticks_per_ms * 200 + go_to_app_timer;
+
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    canopen_link_poll();
 
+    if (!catched)
+    {
+      /* CANopen process */
+      CO_CANinterrupt(CO->CANmodule[0]);
+
+      timebase_mark(&clk);
+      go_to_app_timer += timebase_mark(&clk);
+
+      if (go_to_app_timer > ticks_per200_ms)
+        go_to_app_trigger = true;
+      else if (CO->NMT->operatingStatePrev != CO->NMT->operatingState)
+      {
+        CO->NMT->operatingState = CO_NMT_INITIALIZING;
+        catched = true;
+      }
+    }
+    else
+    {
+      canopen_link_poll();
+    }
     //button condition
     if (go_to_app_trigger)
     {
-      go_to_app();
+      if (OD_verifyApplicationSoftware[0] != 0)// && 0)
+      {
+        go_to_app();
+      }
+      else
+        catched = true;
     }
-    
   }
   /* USER CODE END 3 */
 }

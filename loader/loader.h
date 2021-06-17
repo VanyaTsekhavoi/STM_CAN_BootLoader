@@ -5,14 +5,14 @@
 #include <stdbool.h>
 
 
-uint32_t app_start();
-uint32_t app_end();
-uint32_t app_size();
-uint32_t ldr_start();
-uint32_t ldr_end();
-uint32_t ldr_size();
-void go_to_app();
-void go_to_ldr();
+uint32_t app_start(void);
+uint32_t app_end(void);
+uint32_t app_size(void);
+uint32_t ldr_start(void);
+uint32_t ldr_end(void);
+uint32_t ldr_size(void);
+void go_to_app(void);
+void go_to_ldr(void);
 
 
 #endif

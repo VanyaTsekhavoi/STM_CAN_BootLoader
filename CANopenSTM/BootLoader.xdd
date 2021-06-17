@@ -15,7 +15,7 @@
         <ProfileTechnology>CANopen</ProfileTechnology>
       </ISO15745Reference>
     </ProfileHeader>
-    <ProfileBody xmlns:q1="http://www.canopen.org/xml/1.1" xsi:type="q1:ProfileBody_Device_CANopen" formatName="CANopen" formatVersion="1.0" fileName="BootLoader.xdd" fileCreator="IvTs" fileCreationDate="2021-04-27" fileCreationTime="18:04:42.0000000+03:00" fileModifiedBy="" fileModificationDate="2021-05-13" fileModificationTime="23:43:26.0616600+03:00" fileVersion="1" supportedLanguages="en" xmlns="">
+    <ProfileBody xmlns:q1="http://www.canopen.org/xml/1.1" xsi:type="q1:ProfileBody_Device_CANopen" formatName="CANopen" formatVersion="1.0" fileName="BootLoader.xdd" fileCreator="IvTs" fileCreationDate="2021-04-27" fileCreationTime="18:04:42.0000000+03:00" fileModifiedBy="" fileModificationDate="2021-06-02" fileModificationTime="21:09:44.1016730+03:00" fileVersion="1" supportedLanguages="en" xmlns="">
       <q1:DeviceIdentity>
         <q1:vendorName></q1:vendorName>
         <q1:vendorID>100</q1:vendorID>
@@ -2395,6 +2395,7 @@ node</label>
             <description lang="en">* Application software date contains the number of days since January 1, 1984.
 * Application software time contains the number of milliseconds after midnight (00:00).</description>
             <q1:dataTypeIDRef uniqueIDRef="UID_ARR_1F52" />
+            <q1:property name="CO_storageGroup" value="ROM" />
           </q1:parameter>
           <q1:parameter uniqueID="UID_SUB_1F5200">
             <label lang="en">Highest sub-index supported</label>
@@ -2504,6 +2505,15 @@ Valid values are from 1 to 127:</description>
             <q1:defaultValue value="0x30" />
             <q1:property name="CO_storageGroup" value="ROM" />
           </q1:parameter>
+          <q1:parameter uniqueID="UID_OBJ_2102" access="readWrite">
+            <description lang="en">CAN Bit-Rate is CANopenNode specific variable. It sets CAN Bit-Rate for device on CANopen network.
+
+Valid values are in [kbps]:
+const int canbr[] = {1000, 800, 500, 250, 125, 100, 50, 20, 10};</description>
+            <USINT />
+            <q1:defaultValue value="0" />
+            <q1:property name="CO_storageGroup" value="ROM" />
+          </q1:parameter>
         </q1:parameterList>
       </q1:ApplicationProcess>
     </ProfileBody>
@@ -2521,7 +2531,7 @@ Valid values are from 1 to 127:</description>
         <ProfileTechnology>CANopen</ProfileTechnology>
       </ISO15745Reference>
     </ProfileHeader>
-    <ProfileBody xmlns:q2="http://www.canopen.org/xml/1.1" xsi:type="q2:ProfileBody_CommunicationNetwork_CANopen" formatName="CANopen" formatVersion="1.0" fileName="BootLoader.xdd" fileCreator="IvTs" fileCreationDate="2021-04-27" fileCreationTime="18:04:42.0000000+03:00" fileModificationDate="2021-05-13" fileModificationTime="23:43:26.0616600+03:00" fileVersion="1" supportedLanguages="en" xmlns="">
+    <ProfileBody xmlns:q2="http://www.canopen.org/xml/1.1" xsi:type="q2:ProfileBody_CommunicationNetwork_CANopen" formatName="CANopen" formatVersion="1.0" fileName="BootLoader.xdd" fileCreator="IvTs" fileCreationDate="2021-04-27" fileCreationTime="18:04:42.0000000+03:00" fileModificationDate="2021-06-02" fileModificationTime="21:09:44.1016730+03:00" fileVersion="1" supportedLanguages="en" xmlns="">
       <ApplicationLayers>
         <q2:CANopenObjectList>
           <CANopenObject index="1000" name="Device type" objectType="7" PDOmapping="no" uniqueIDRef="UID_OBJ_1000" />
@@ -2848,6 +2858,7 @@ Valid values are from 1 to 127:</description>
           <CANopenObject index="1F80" name="NMT startup" objectType="7" PDOmapping="no" uniqueIDRef="UID_OBJ_1F80" />
           <CANopenObject index="2100" name="Error status bits" objectType="7" PDOmapping="optional" uniqueIDRef="UID_OBJ_2100" />
           <CANopenObject index="2101" name="CAN node ID" objectType="7" PDOmapping="no" uniqueIDRef="UID_OBJ_2101" />
+          <CANopenObject index="2102" name="CAN BitRate" objectType="7" PDOmapping="no" uniqueIDRef="UID_OBJ_2102" />
         </q2:CANopenObjectList>
         <dummyUsage>
           <dummy entry="Dummy0001=0" />

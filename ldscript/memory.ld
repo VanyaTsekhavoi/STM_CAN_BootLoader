@@ -10,7 +10,6 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 
 __app_start = ORIGIN(AFLASH);
 __app_end = ORIGIN(AFLASH) + LENGTH(AFLASH);
-__app_size = LENGTH(AFLASH);
 
 __ldr_start = ORIGIN(LFLASH);
 __ldr_end = ORIGIN(LFLASH) + LENGTH(LFLASH);

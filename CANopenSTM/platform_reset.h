@@ -3,7 +3,7 @@
 
 #include "stm32f7xx_hal.h"
 
-static inline void platform_do_reset()
+static inline void platform_do_reset(void)
 {
 	SCB->AIRCR = 0x5fa << SCB_AIRCR_VECTKEY_Pos | SCB_AIRCR_SYSRESETREQ_Msk;
 }

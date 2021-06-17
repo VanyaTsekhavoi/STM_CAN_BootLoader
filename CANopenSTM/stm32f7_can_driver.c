@@ -125,6 +125,7 @@ static void can_start(CAN_TypeDef *dev)
 
     dev->MCR &= ~CAN_MCR_NART;  //disable no autoretransmitt
     dev->MCR |= CAN_MCR_ABOM;   //autoble bus off management
+    dev->MCR |= CAN_MCR_TXFP;   //transmit order chronologically
     dev->MCR &= ~CAN_MCR_SLEEP; //disable sleep mode
 
     SET_BIT(dev->FMR, CAN_FMR_FINIT);
@@ -705,6 +706,11 @@ void CO_CANinterrupt(CO_CANmodule_t *CANmodule)
         bool_t msgMatched = false;
         uint32_t nbrOfRxMsg = 0;
 
+        if (can_is_rx_overrun(dev))
+        {
+            HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, SET);
+        }  
+
         index = can_rx_get_filter_index(dev); /* get index of the received message here. Or something similar */
         nbrOfRxMsg = can_nbr_of_rx_pending(dev);
         
@@ -715,6 +721,24 @@ void CO_CANinterrupt(CO_CANmodule_t *CANmodule)
         
         rcvMsgIdent = rcvMsg->ident;
         rcvMsgIdentDebug = (CAN_RI0R_STID & rcvMsg->ident) >> CAN_TI0R_STID_Pos;
+
+        static uint8_t temp_num = 0, num = 0;
+        if ((rcvMsg->data[0] & 0xE1U) == 0xC0U)
+        {
+            temp_num = 1;
+        }
+        else if ((rcvMsgIdentDebug == 0x630) && ((rcvMsg->data[0] & 0x80U) == 0x80U))
+        {
+            temp_num = 5;
+        }
+        else if (rcvMsgIdentDebug == 0x630 && temp_num == 1)
+        {
+            if (++num != rcvMsg->data[0])
+            {
+                HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
+            }
+            num %= 20;
+        }
 
         if (CANmodule->useCANrxFilters)
         {

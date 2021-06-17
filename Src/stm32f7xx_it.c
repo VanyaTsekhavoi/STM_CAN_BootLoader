@@ -43,7 +43,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
-bool go_to_app_trigger = false;
+extern bool go_to_app_trigger;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/

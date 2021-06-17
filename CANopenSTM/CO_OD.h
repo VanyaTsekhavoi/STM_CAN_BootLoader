@@ -77,7 +77,7 @@
 /*******************************************************************************
    OBJECT DICTIONARY
 *******************************************************************************/
-   #define CO_OD_NoOfElements             29
+   #define CO_OD_NoOfElements             30
 
 
 /*******************************************************************************
@@ -342,6 +342,9 @@
 /*2101 */
         #define OD_2101_CANNodeID                                   0x2101
 
+/*2102 */
+        #define OD_2102_CAN_BitRate                                 0x2102
+
 /*******************************************************************************
    STRUCTURES FOR VARIABLES IN DIFFERENT MEMORY LOCATIONS
 *******************************************************************************/
@@ -357,7 +360,6 @@ struct sCO_OD_RAM{
 /*1011      */ UNSIGNED32      restoreDefaultParameters[4];
 /*1F50      */ DOMAIN          downloadProgramData[1];
 /*1F51      */ UNSIGNED8       programControl[1];
-/*1F52      */ UNSIGNED32      verifyApplicationSoftware[2];
 /*2100      */ OCTET_STRING   errorStatusBits[10];
 
                UNSIGNED32     LastWord;
@@ -382,8 +384,10 @@ struct sCO_OD_ROM{
 /*1029      */ UNSIGNED8       errorBehavior[6];
 /*1200      */ OD_SDOServerParameter_t SDOServerParameter[1];
 /*1280      */ OD_SDOClientParameter_t SDOClientParameter[1];
+/*1F52      */ UNSIGNED32      verifyApplicationSoftware[2];
 /*1F80      */ UNSIGNED32     NMTStartup;
 /*2101      */ UNSIGNED32     CANNodeID;
+/*2102      */ UNSIGNED8      CAN_BitRate;
 
                UNSIGNED32     LastWord;
 };
@@ -523,7 +527,7 @@ extern struct sCO_OD_PERSIST_COMM CO_OD_PERSIST_COMM;
         #define ODA_programControl_programNumber1                   0
 
 /*1F52, Data Type: UNSIGNED32, Array[2] */
-        #define OD_verifyApplicationSoftware                        CO_OD_RAM.verifyApplicationSoftware
+        #define OD_verifyApplicationSoftware                        CO_OD_ROM.verifyApplicationSoftware
         #define ODL_verifyApplicationSoftware_arrayLength           2
         #define ODA_verifyApplicationSoftware_applicationSoftwareDate 0
         #define ODA_verifyApplicationSoftware_applicationSoftwareTime 1
@@ -537,6 +541,9 @@ extern struct sCO_OD_PERSIST_COMM CO_OD_PERSIST_COMM;
 
 /*2101, Data Type: UNSIGNED32 */
         #define OD_CANNodeID                                        CO_OD_ROM.CANNodeID
+
+/*2102, Data Type: UNSIGNED8 */
+        #define OD_CAN_BitRate                                      CO_OD_ROM.CAN_BitRate
 
 #endif
 // clang-format on
